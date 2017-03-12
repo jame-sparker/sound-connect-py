@@ -5,10 +5,33 @@
 
 import socket
 
-s = socket.socket()
-host = socket.gethostname()
-port = 54321
 
-s.connect((host, port))
-print s.recv(1024)
-s.close
+class Client:
+
+    def __init__(self):
+        return
+
+    def communicate(self):
+
+        while True:
+            message = raw_input("Enter a message to send: ")
+            if message == "":
+                break
+            self.socket.send(message)
+        self.socket.close
+
+    def connect(self, host = socket.gethostname()):
+        self.socket = socket.socket()
+        # just in case a user brutally quits the software
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+
+        port = 54321
+
+        self.socket.connect((host, port))
+
+        self.communicate()
+
+
+client = Client()
+
+client.connect()
