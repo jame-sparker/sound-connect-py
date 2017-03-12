@@ -4,6 +4,52 @@
 """
 import threading
 import socket
+from FoxDot import *
+
+# note: threading.lock -> acquire & release
+
+class FoxDotHandler:
+    counter = 0
+    counter_lock = threading.Lock()
+
+    players = {} # (addr) -> player
+
+    @staticmethod
+    def increment_counter():
+        FoxDotHandler.counter_lock.acquire()
+        FoxDotHandler.counter += 1
+        FoxDotHandler.counter_lock.release()
+        print FoxDotHandler.counter
+
+    @staticmethod
+    def decrement_counter():
+        FoxDotHandler.counter_lock.acquire()
+        FoxDotHandler.counter -= 1
+        FoxDotHandler.counter_lock.release()
+        print FoxDotHandler.counter
+
+    @staticmethod
+    def set_note(addr, note): #music note 
+        # dictionary is threadsafe by default
+        if addr in FoxDotHandler.players:
+            FoxDotHandler.players[addr] >> note
+        else:
+            player = Player()
+            player >> note
+            
+    def removePlayer(addr):
+        FoxDotHandler.players[addr].stop()
+        del FoxDotHandler.players[addr] 
+
+    @staticmethod
+    def update():
+        p1 >> pluck([0,2,4], dur=[1,1/2,1/2], amp=[1, 3/4, 3/4])
+
+
+    @staticmethod
+    def stop():
+
+
 
 
 class Receiver(threading.Thread):
@@ -18,13 +64,19 @@ class Receiver(threading.Thread):
     def run(self):
 
         print 'Got connection from', self.addr
+
+        FoxDotHandler.increment_counter()
+
         while True:
             received_message = self.client.recv(1024)
             if received_message == "":
                 break
-            print (received_message)
+            FoxDotHandler.set_note(self.addr, "note")
 
         print "Closing "
+
+        FoxDotHandler.removePlayer()
+        FoxDotHandler.decrement_counter()
         self.client.close()
 
 
@@ -43,7 +95,6 @@ class Host:
         self.socket.listen(5)
 
         while True:
-            print "accepting new socket"
             client, addr = self.socket.accept()
 
             t = Receiver(args=(client,addr,))
