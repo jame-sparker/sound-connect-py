@@ -50,6 +50,10 @@ class FoxDotHandler:
     def stop():
         return
 
+    @staticmethod
+    def getTime():
+        return Clock.now()
+
 
 
 class Receiver(threading.Thread):
@@ -82,10 +86,17 @@ class Receiver(threading.Thread):
 
 class Host:
 
-    def setup_socket(self):
+    def setup_socket(self, hostname = None):
         self.socket = socket.socket()
-        host = socket.gethostname()
-        port = 54321
+        if hostname != None:
+            host = hostname
+            # print host
+        else:
+            host = socket.gethostname()
+            print host
+
+        port = 54323
+
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((host, port))
 
@@ -101,8 +112,9 @@ class Host:
             t.start()
 
 
-host = Host()
-host.setup_socket()
-host.listen()
+if __name__ == '__main__':
+    host = Host()
+    host.setup_socket()
+    host.listen()
 
 

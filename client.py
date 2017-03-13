@@ -28,3 +28,10 @@ class Client:
 
         self.socket.connect((host, port))
 
+    def close(self):
+        self.socket.close()
+
+if __name__ == '__main__':
+    client = Client()
+    client.connect()
+    client.communicate()
