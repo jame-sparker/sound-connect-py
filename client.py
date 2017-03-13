@@ -28,9 +28,3 @@ class Client:
 
         self.socket.connect((host, port))
 
-        self.communicate()
-
-
-client = Client()
-
-client.connect()

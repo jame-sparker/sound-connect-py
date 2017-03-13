@@ -48,7 +48,7 @@ class FoxDotHandler:
 
     @staticmethod
     def stop():
-
+        return
 
 
 
@@ -75,7 +75,7 @@ class Receiver(threading.Thread):
 
         print "Closing "
 
-        FoxDotHandler.removePlayer()
+        # FoxDotHandler.removePlayer()
         FoxDotHandler.decrement_counter()
         self.client.close()
 
