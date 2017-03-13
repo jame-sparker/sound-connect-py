@@ -153,25 +153,25 @@ class Receiver(threading.Thread):
             pitch = music.note_to_number(note_text)
 
             if instrument_text == "pulse":
-                return pulse([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return pulse([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "soprano": # flute does not exist 
-                return flute([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return flute([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "marimba":
-                return marimba([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return marimba([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "bass":
-                return bass([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return bass([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "bell":
-                return bell([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return bell([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "ripple":
-                return ripple([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return ripple([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "zap":
-                return zap([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+                return zap([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
         return None
 
