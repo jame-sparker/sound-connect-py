@@ -11,6 +11,8 @@ class Client:
         return
 
     def communicate(self):
+        """debug purpose only
+        """
 
         while True:
             message = raw_input("Enter a message to send: ")
@@ -30,6 +32,9 @@ class Client:
 
     def close(self):
         self.socket.close()
+
+    def send(self, message):
+        self.socket.send(message)
 
 if __name__ == '__main__':
     client = Client()

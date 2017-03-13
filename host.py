@@ -95,7 +95,7 @@ class Host:
             host = socket.gethostname()
             print host
 
-        port = 54323
+        port = 54321
 
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((host, port))
@@ -104,7 +104,7 @@ class Host:
     def listen(self):
 
         self.socket.listen(5)
-
+        print("listening")
         while True:
             client, addr = self.socket.accept()
 

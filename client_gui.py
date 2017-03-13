@@ -4,6 +4,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import socket
 import client
+import music
 
 
 class MainWindow(QMainWindow):
@@ -21,24 +22,24 @@ class MainWindow(QMainWindow):
     def connect_clicked(self):
         nickname = str(self.connection_widget.name_edit.text()).strip()
         host_ip = str(self.connection_widget.ip_edit.text()).strip()
-        try:
-            error_text = self.connection_widget.error_text
-            error_text.setStyleSheet('color: gray')
-            error_text.setText("Connecting")
+        # try:
+        error_text = self.connection_widget.error_text
+        error_text.setStyleSheet('color: gray')
+        error_text.setText("Connecting")
 
-            self.client.connect(host = host_ip)
+        self.client.connect(host = host_ip)
 
-            error_text.setText("")
+        error_text.setText("")
 
-            music_widget = MusicWidget(self)
-            self.central_widget.addWidget(music_widget)
-            self.central_widget.setCurrentWidget(music_widget)
+        music_widget = MusicWidget(self)
+        self.central_widget.addWidget(music_widget)
+        self.central_widget.setCurrentWidget(music_widget)
 
-        except Exception as e: 
-            print(e)
+        # except Exception as e: 
+        #     print(e)
 
-            error_text.setStyleSheet('color: red')
-            error_text.setText("Connection failed")
+        #     error_text.setStyleSheet('color: red')
+        #     error_text.setText("Connection failed")
 
     def return_clicked(self):
         self.client.close()
@@ -107,6 +108,7 @@ class ConnectionWidget(QWidget):
 
 
 class MusicWidget(QWidget):
+
     def __init__(self, parent=None):
         super(MusicWidget, self).__init__(parent)
         
@@ -115,19 +117,33 @@ class MusicWidget(QWidget):
         back_button.setText("< Back")
         back_button.clicked.connect(parent.return_clicked)
 
+        error_label = QLabel(self)
+        error_label.setGeometry(200,450,200,30)
+        error_label.setStyleSheet('color: red')
+
+
         main_hbox = QHBoxLayout()
         main_hbox.setMargin(50)
 
         instrument_vbox = QVBoxLayout()
 
-        instrument_image = QLabel()
-        instrument_image.setPixmap(QPixmap("music.png"))
+        self.instrument_image = QLabel()
+        self.instrument_image.setFixedWidth(300)
+        self.instrument_image.setFixedHeight(300)
+        self.instrument_image.setScaledContents(True)
 
-        instrument_cb = QComboBox()
-        instrument_cb.addItem("Piano")
 
-        instrument_vbox.addWidget(instrument_image)
-        instrument_vbox.addWidget(instrument_cb)
+        self.instrument_cb = QComboBox()
+
+        # add items to combobox
+        self.instrument_cb.addItems(music.instrument_display_names)
+        self.instrument_cb.currentIndexChanged.connect(self.setComboBoxImage)
+
+
+        self.setComboBoxImage()
+
+        instrument_vbox.addWidget(self.instrument_image)
+        instrument_vbox.addWidget(self.instrument_cb)
 
         main_hbox.addLayout(instrument_vbox)
 
@@ -138,33 +154,74 @@ class MusicWidget(QWidget):
         pitch_label = QLabel("Note:")
         pitch_hbox.addWidget(pitch_label)
 
-        pitch_cb = QComboBox()
-        pitch_cb.addItem("C4")
-        pitch_hbox.addWidget(pitch_cb)
+        self.pitch_cb = QComboBox()
+        self.pitch_cb.addItems(music.allnotes)
+        self.pitch_cb.setMaxVisibleItems(15)
+        self.pitch_cb.setStyleSheet("QComboBox { combobox-popup: 0; }");
+
+        pitch_hbox.addWidget(self.pitch_cb)
 
         pitch_hbox.addStretch()
 
         details_vbox.addLayout(pitch_hbox)
 
-        timing = QLabel("Timing")
+        timing = QLabel("Timing:")
         details_vbox.addWidget(timing)
-        timing_edit = QLineEdit()
-        details_vbox.addWidget(timing_edit)
+        self.timing_edit = QLineEdit()
+        details_vbox.addWidget(self.timing_edit)
 
         details_vbox.addStretch()
 
         send_button = QPushButton("Send")
+        send_button.clicked.connect(self.connect_clicked)
         details_vbox.addWidget(send_button)
 
         main_hbox.addLayout(details_vbox)
 
         self.setLayout(main_hbox)
-        self.setGeometry(100,100,500,500)
+        self.setGeometry(100,100,550,500)
+
+
+    def setComboBoxImage(self):
+
+        index = self.instrument_cb.currentIndex()
+
+        image_file_name = music.instrument_names[index] + ".png"
+        script_dir = os.path.dirname(__file__)
+        rel_path = "assets/" + image_file_name
+        abs_file_path = os.path.join(script_dir, rel_path)
+        self.instrument_image.setPixmap(QPixmap(abs_file_path))
+
+    def connect_clicked(self):
+
+        timing_text = str(self.timing_edit.text()).replace(" ", "")
+
+        if self.is_valid_timing(timing_text):
+            note_text = note_to_numberstr(self.pitch_cb.currentText())
+            
+            index = self.instrument_cb.currentIndex()
+            instrument_text = music.instrument_names[index]
+
+            message = note_text + "|" + instrument_text + "|" + timing_text
+            self.client.send(message)
+
+        else:
+            error_label = "Invalid timing input"
+
+    def is_valid_timing(self, text):
+        try:
+            for text_num in text.split():
+                print text_num
+                float(text_num)
+        except:
+            return False
+        return True
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.setGeometry(100,100,0,0)
+    window.setGeometry(100,100,400,300)
     window.show()
     # app.exec_()
     sys.exit(app.exec_())

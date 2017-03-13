@@ -83,6 +83,16 @@ class HostWidget(QWidget):
         pen = QPen(Qt.blue, 4, Qt.SolidLine)
         qp.setPen(pen)
         qp.drawLine(time, 300, time, 660)
+
+        #draw images
+        # clefs
+
+        treble = QPixmap("trebel_clef2.png")
+        bass = QPixmap("bass_clef.png")
+
+        qp.drawPixmap(110, 280, 64, 160, treble)
+        qp.drawPixmap(110, 547, 80, 100, bass)
+
         qp.end()
 
 
