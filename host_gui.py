@@ -87,8 +87,13 @@ class HostWidget(QWidget):
         #draw images
         # clefs
 
-        treble = QPixmap("trebel_clef2.png")
-        bass = QPixmap("bass_clef.png")
+        script_dir = os.path.dirname(__file__) # hard to read, should be in for loop
+        file_paths = ["trebel_clef.png", "bass_clef.png"]
+        rel_paths = ["assets/" + file for file in file_paths]
+        abs_file_path = [os.path.join(script_dir, p) for p in rel_paths]
+
+        treble = QPixmap(abs_file_path[0])
+        bass = QPixmap(abs_file_path[1])
 
         qp.drawPixmap(110, 280, 64, 160, treble)
         qp.drawPixmap(110, 547, 80, 100, bass)
