@@ -110,16 +110,18 @@ class ConnectionWidget(QWidget):
 class MusicWidget(QWidget):
 
     def __init__(self, parent=None):
+
         super(MusicWidget, self).__init__(parent)
+        self.parent = parent
         
         back_button = QPushButton(self)
         back_button.setGeometry(10,10,60,30)
         back_button.setText("< Back")
         back_button.clicked.connect(parent.return_clicked)
 
-        error_label = QLabel(self)
-        error_label.setGeometry(200,450,200,30)
-        error_label.setStyleSheet('color: red')
+        self.error_label = QLabel(self)
+        self.error_label.setGeometry(200,390,200,30)
+        self.error_label.setStyleSheet('color: red')
 
 
         main_hbox = QHBoxLayout()
@@ -157,6 +159,7 @@ class MusicWidget(QWidget):
         self.pitch_cb = QComboBox()
         self.pitch_cb.addItems(music.allnotes)
         self.pitch_cb.setMaxVisibleItems(15)
+        self.pitch_cb.setCurrentIndex(12)
         self.pitch_cb.setStyleSheet("QComboBox { combobox-popup: 0; }");
 
         pitch_hbox.addWidget(self.pitch_cb)
@@ -197,22 +200,24 @@ class MusicWidget(QWidget):
         timing_text = str(self.timing_edit.text()).replace(" ", "")
 
         if self.is_valid_timing(timing_text):
-            note_text = note_to_numberstr(self.pitch_cb.currentText())
+            self.error_label.setText("")
+            note_text = str(self.pitch_cb.currentText())
             
             index = self.instrument_cb.currentIndex()
             instrument_text = music.instrument_names[index]
 
             message = note_text + "|" + instrument_text + "|" + timing_text
-            self.client.send(message)
+            self.parent.client.send(message)
 
         else:
-            error_label = "Invalid timing input"
+            self.error_label.setText("Invalid timing input")
 
     def is_valid_timing(self, text):
+
         try:
-            for text_num in text.split():
-                print text_num
-                float(text_num)
+            for text_num in text.split(","):
+                n, d = map(float, text_num.split("/"))
+                n / d
         except:
             return False
         return True

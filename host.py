@@ -4,6 +4,7 @@
 """
 import threading
 import socket
+import music
 from FoxDot import *
 
 # note: threading.lock -> acquire & release
@@ -31,12 +32,20 @@ class FoxDotHandler:
     @staticmethod
     def set_note(addr, note): #music note 
         # dictionary is threadsafe by default
+        print "players info"
+        print addr
+        print FoxDotHandler.players.keys()
         if addr in FoxDotHandler.players:
+            print "prevous player"
             FoxDotHandler.players[addr] >> note
         else:
+            print "new player"
             player = Player()
+            print note
             player >> note
-            
+            FoxDotHandler.players[addr] = player
+          
+    @staticmethod  
     def removePlayer(addr):
         FoxDotHandler.players[addr].stop()
         del FoxDotHandler.players[addr] 
@@ -48,7 +57,12 @@ class FoxDotHandler:
 
     @staticmethod
     def stop():
-        return
+        Clock.stop()
+
+    @staticmethod
+    def reset():
+        FoxDotHandler.stop()
+        FoxDotHandler.players = {}
 
     @staticmethod
     def getTime():
@@ -75,14 +89,91 @@ class Receiver(threading.Thread):
             received_message = self.client.recv(1024)
             if received_message == "":
                 break
-            FoxDotHandler.set_note(self.addr, "note")
 
-        print "Closing "
+            print received_message
 
-        # FoxDotHandler.removePlayer()
+            FoxDotHandler.set_note(self.addr, self.noteFactory(received_message))
+
+        print "Closing"
+
+        FoxDotHandler.removePlayer(self.addr)
         FoxDotHandler.decrement_counter()
         self.client.close()
 
+
+    def noteFactory(self,message):
+        note_text, instrument_text, timing_text = message.split("|")
+
+        instrument_index = music.instrument_names.index(instrument_text)
+        print instrument_index
+        print instrument_text
+
+        if instrument_index >= 4 and instrument_index <= 8:
+            # drum kit
+
+            #not implemented yet
+            if instrument_text == "bass_drum":
+                pass
+            elif instrument_text == "crash":
+                pass
+            elif instrument_text == "hi_hat_closed":
+                pass
+            elif instrument_text == "hi_hat_open":
+                pass
+            elif instrument_text == "snare_drum":
+                pass
+
+            return None
+
+        elif instrument_index != -1:
+            timing_list = []            
+
+            for text_num in timing_text.split(","):
+                n, d = map(float, text_num.split("/"))
+                timing_list.append(n/d)
+
+            # remove duplicates
+            timing_list = list(set(timing_list))
+            timing_list.sort()
+
+            foxdot_timing_list = []
+            foxdot_amp_list = [0] + [1] * len(timing_list)
+
+            for i in range(len(timing_list)):
+                diff = 0
+                if i == 0:
+                    diff = timing_list[i]
+                else:
+                    diff = timing_list[i] - timing_list[i - 1]
+                foxdot_timing_list.append(diff)
+
+            foxdot_timing_list.append(1 - timing_list[-1])
+            # end of timing creation
+
+            pitch = music.note_to_number(note_text)
+
+            if instrument_text == "pulse":
+                return pulse([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+            elif instrument_text == "soprano": # flute does not exist 
+                return flute([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+            elif instrument_text == "marimba":
+                return marimba([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+            elif instrument_text == "bass":
+                return bass([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+            elif instrument_text == "bell":
+                return bell([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+            elif instrument_text == "ripple":
+                return ripple([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+            elif instrument_text == "zap":
+                return zap([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list)
+
+        return None
 
 class Host:
 
@@ -90,7 +181,6 @@ class Host:
         self.socket = socket.socket()
         if hostname != None:
             host = hostname
-            # print host
         else:
             host = socket.gethostname()
             print host

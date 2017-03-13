@@ -105,13 +105,16 @@ class HostWidget(QWidget):
         return ip_address
 
     def reset(self):
+        host.FoxDotHandler.stop()
+        host.FoxDotHandler.stop()
         return
 
     def toggle_stop(self):
         start = "Start"
         stop = "Stop"
 
-        if self.start_stop_button.text() == start:
+        if self.start_stop_button.text() == start: # stop
+            host.FoxDotHandler.stop()
             self.start_stop_button.setText(stop)
         else:
             self.start_stop_button.setText(start)
