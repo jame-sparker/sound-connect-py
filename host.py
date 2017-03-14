@@ -11,7 +11,9 @@ from FoxDot import *
 
 class FoxDotHandler:
     counter = 0
+    measures = 4
     counter_lock = threading.Lock()
+    measures_lock = threading.Lock()
 
     players = {} # (addr) -> player
 
@@ -30,11 +32,33 @@ class FoxDotHandler:
         print FoxDotHandler.counter
 
     @staticmethod
+    def increment_measure():
+        FoxDotHandler.measures_lock.acquire()
+        FoxDotHandler.measures += 1
+        FoxDotHandler.measures_lock.release()
+
+    @staticmethod
+    def decrement_measure():
+        FoxDotHandler.measures_lock.acquire()
+        FoxDotHandler.measures -= 1
+        FoxDotHandler.measures_lock.release()
+
+    @staticmethod
+    def get_measure():
+        value = 0
+        FoxDotHandler.measures_lock.acquire()
+        value = FoxDotHandler.measures
+        FoxDotHandler.measures_lock.release()
+        return value
+
+    @staticmethod
     def set_note(addr, note): #music note 
         # dictionary is threadsafe by default
         if addr in FoxDotHandler.players:
             print "prevous player"
             player, _ = FoxDotHandler.players[addr]
+            player.stop()
+            player = Player()
             player >> note
             FoxDotHandler.players[addr] = (player, note)
         else:
@@ -112,32 +136,57 @@ class Receiver(threading.Thread):
         note_text, instrument_text, timing_text = message.split("|")
 
         instrument_index = music.instrument_names.index(instrument_text)
-        print instrument_index
-        print instrument_text
+
+        measures = FoxDotHandler.get_measure()
 
         if instrument_index >= 4 and instrument_index <= 8:
             # drum kit
+            # create a string of "." and "x" based on input
 
             #not implemented yet
-            if instrument_text == "bass_drum":
-                pass
-            elif instrument_text == "crash":
-                pass
-            elif instrument_text == "hi_hat_closed":
-                pass
-            elif instrument_text == "hi_hat_open":
-                pass
-            elif instrument_text == "snare_drum":
-                pass
 
-            return None
+            timing_list = []
+            for text_num in timing_text.split(","):
+                n, d = map(float, text_num.split("/"))
+                float_value = n / d
+                if float_value <= measures:
+                    timing_list.append(int(float_value * 2))
+
+            # remove duplicates
+            timing_list = list(set(timing_list))
+            timing_list.sort()
+
+            play_string_list = ["."] * measures * 2
+            for i in timing_list:
+                play_string_list[i - 1] = "x"
+
+            play_string = "".join(play_string_list)
+
+            # drum doesnt need changes
+            if instrument_text == "crash":
+                play_string = play_string.replace("x", "#")
+
+            elif instrument_text == "hi_hat_closed":
+                play_string = play_string.replace("x", "-")
+
+            elif instrument_text == "hi_hat_open":
+                play_string = play_string.replace("x", "=")
+
+            elif instrument_text == "snare_drum":
+                play_string = play_string.replace("x", "o")
+
+            print play_string
+            return play(play_string, amp=[1])
+
 
         elif instrument_index != -1:
             timing_list = []            
 
             for text_num in timing_text.split(","):
                 n, d = map(float, text_num.split("/"))
-                timing_list.append(n/d)
+                float_value = n/d
+                if float_value <= measures:
+                    timing_list.append(float_value)
 
             # remove duplicates
             timing_list = list(set(timing_list))
@@ -154,7 +203,7 @@ class Receiver(threading.Thread):
                     diff = timing_list[i] - timing_list[i - 1]
                 foxdot_timing_list.append(diff)
 
-            foxdot_timing_list.append(1 - timing_list[-1])
+            foxdot_timing_list.append(measures - timing_list[-1])
             # end of timing creation
 
             pitch = music.note_to_number(note_text)
