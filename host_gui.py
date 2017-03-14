@@ -7,6 +7,7 @@ from PyQt4.QtGui import *
 
 import host
 import time
+import music
 
 class HostWidget(QWidget):
     def __init__(self, parent=None):
@@ -84,6 +85,8 @@ class HostWidget(QWidget):
             y = top + ((8 + i) * line_space)
             qp.drawLine(side_margin, y, width - side_margin, y)
 
+        qp.drawLine(side_margin, bottom + 2 * line_space, width - side_margin, bottom + 2 * line_space)
+
         # draw vertical lines
         for i in range(measures + 1):
             x = side_margin + i * sheet_width / measures
@@ -91,12 +94,11 @@ class HostWidget(QWidget):
 
         # draw moving line
 
-
         time = (host.FoxDotHandler.getTime() * sheet_width / measures) % sheet_width + side_margin
 
         pen = QPen(Qt.blue, 4, Qt.SolidLine)
         qp.setPen(pen)
-        qp.drawLine(time, top, time, bottom)
+        qp.drawLine(time, top, time, bottom + 2 * line_space)
 
         #draw images
         # clefs
@@ -112,7 +114,35 @@ class HostWidget(QWidget):
         qp.drawPixmap(110, top - 20, 64, 160, treble)
         qp.drawPixmap(110, bottom - 113, 80, 100, bass)
 
-        # draw points
+        # user instruments
+
+        # create image list
+        instrument_images = []
+
+        for inst in music.instrument_names:
+            image_file_name = inst + ".png"
+            rel_path = "assets/" + image_file_name
+            abs_file_path = os.path.join(script_dir, rel_path)
+            instrument_images.append(QPixmap(abs_file_path))
+
+        for _, _, input_args in host.FoxDotHandler.players.values():
+
+            timing, inst_index, pitch = input_args
+
+            y = 0
+            
+            if inst_index <= 8 and inst_index >= 4: # drum kit
+                y = bottom + 2 * line_space
+            else:
+                if pitch >= 0:
+                    y = top + line_space * 5 - (line_space / 2) * pitch
+                else: 
+                    y = top + line_space * 7.5 - (line_space / 2) * pitch
+
+            for x_timing in timing:
+                x = (x_timing / measures * sheet_width + side_margin)
+                size = max(30, 60 - abs(time - x)) # 30 pixels front and back
+                qp.drawPixmap(x - size /2, y - size / 2, size, size, instrument_images[inst_index])
 
         qp.end()
 
@@ -149,7 +179,7 @@ class HostWidget(QWidget):
         while True:
             self.update()               
             QApplication.processEvents()
-            time.sleep(0.01)
+            time.sleep(0.001)
 
     def closeEvent(self, event): # perform clean up
         # self.running = False
