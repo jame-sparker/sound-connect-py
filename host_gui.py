@@ -13,7 +13,7 @@ class HostWidget(QWidget):
         super(HostWidget, self).__init__(parent)
 
         self.host = host.Host()
-
+        self.running = True
         # set background color
 
         p = self.palette()
@@ -52,8 +52,8 @@ class HostWidget(QWidget):
         self.setLayout(main_vbox)
         self.setGeometry(200,100,700,700)
 
-        t = threading.Thread(target=self.run_host, args=(ip_address,))
-        t.start()
+        self.t = threading.Thread(target=self.run_host, args=(ip_address,))
+        self.t.start()
 
     def paintEvent(self, e):
 
@@ -65,24 +65,43 @@ class HostWidget(QWidget):
         pen = QPen(Qt.black, 3, Qt.SolidLine)
         qp.setPen(pen)
 
+        height = self.frameGeometry().height()
+        width = self.frameGeometry().width()
+        top = height / 2 - 200
+        line_space = 30
+        bottom = top + line_space * 12
+        side_margin = 100
+
+
         for i in range(5):
-            y = 300 + 30 * i
-            qp.drawLine(100, y, 1700, y)
+            y = top + line_space * i
+            qp.drawLine(side_margin, y, width - side_margin, y)
     
         for i in range(5):
-            y = 300 + (2 * 120) + 30 * i
-            qp.drawLine(100, y, 1700, y)
+            y = top + ((8 + i) * line_space)
+            qp.drawLine(side_margin, y, width - side_margin, y)
 
-        qp.drawLine(100, 300, 100, 660)
-        qp.drawLine(1700, 300, 1700, 660)
+        qp.drawLine(side_margin,
+                    top,
+                    side_margin,
+                    bottom)
+
+        qp.drawLine(width - side_margin,
+                    top,
+                    width - side_margin, 
+                    bottom)
 
 
         # draw moving line
-        time = (host.FoxDotHandler.getTime() * 1600 / 4) % 1600 + 100
+
+        sheet_width = width - 2 * side_margin
+        measures = 4
+
+        time = (host.FoxDotHandler.getTime() * sheet_width / measures) % sheet_width + side_margin
 
         pen = QPen(Qt.blue, 4, Qt.SolidLine)
         qp.setPen(pen)
-        qp.drawLine(time, 300, time, 660)
+        qp.drawLine(time, top, time, bottom)
 
         #draw images
         # clefs
@@ -95,8 +114,10 @@ class HostWidget(QWidget):
         treble = QPixmap(abs_file_path[0])
         bass = QPixmap(abs_file_path[1])
 
-        qp.drawPixmap(110, 280, 64, 160, treble)
-        qp.drawPixmap(110, 547, 80, 100, bass)
+        qp.drawPixmap(110, top - 20, 64, 160, treble)
+        qp.drawPixmap(110, bottom - 83, 80, 100, bass)
+
+        # draw points
 
         qp.end()
 
@@ -110,7 +131,6 @@ class HostWidget(QWidget):
         return ip_address
 
     def reset(self):
-        host.FoxDotHandler.stop()
         host.FoxDotHandler.stop()
         return
 
@@ -129,12 +149,16 @@ class HostWidget(QWidget):
         self.host.listen()
 
     def update_1(self):
-        while True:
+        while self.running:
             self.update()               
             QApplication.processEvents()
             time.sleep(0.0025)
+        print "update done"
 
-
+    def closeEvent(self, event):
+        window.running = False
+        window.host.stop()
+        print ("close finish")
 
 
 if __name__ == '__main__':
@@ -142,5 +166,6 @@ if __name__ == '__main__':
     window = HostWidget()
     window.setGeometry(100,100,1900,1300)
     window.show()
-    window.update_1()
+    print threading.enumerate()
     sys.exit(app.exec_())
+    window.update_1()

@@ -47,8 +47,9 @@ class FoxDotHandler:
           
     @staticmethod  
     def removePlayer(addr):
-        FoxDotHandler.players[addr].stop()
-        del FoxDotHandler.players[addr] 
+        if addr in FoxDotHandler.players:
+            FoxDotHandler.players[addr].stop()
+            del FoxDotHandler.players[addr] 
 
     @staticmethod
     def update():
@@ -178,6 +179,7 @@ class Receiver(threading.Thread):
 class Host:
 
     def setup_socket(self, hostname = None):
+        self.hostname = hostname
         self.socket = socket.socket()
         if hostname != None:
             host = hostname
@@ -185,21 +187,30 @@ class Host:
             host = socket.gethostname()
             print host
 
-        port = 54321
+        self.port = 54321
 
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind((host, port))
+        self.socket.bind((host, self.port))
 
+    def stop(self):
+        socket.socket(socket.AF_INET, 
+                  socket.SOCK_STREAM).connect( (self.hostname, self.port))
+        self.socket.close()
 
     def listen(self):
 
         self.socket.listen(5)
         print("listening")
         while True:
-            client, addr = self.socket.accept()
+            try:
+                client, addr = self.socket.accept()
 
-            t = Receiver(args=(client,addr,))
-            t.start()
+                t = Receiver(args=(client,addr,))
+                t.start()
+            except: # socket is closed
+                break
+
+        print("server closed")
 
 
 if __name__ == '__main__':
