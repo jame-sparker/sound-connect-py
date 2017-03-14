@@ -71,8 +71,11 @@ class HostWidget(QWidget):
         line_space = 30
         bottom = top + line_space * 12
         side_margin = 100
+        sheet_width = width - 2 * side_margin
 
+        measures = 4
 
+        # draw horizontal lines
         for i in range(5):
             y = top + line_space * i
             qp.drawLine(side_margin, y, width - side_margin, y)
@@ -81,21 +84,13 @@ class HostWidget(QWidget):
             y = top + ((8 + i) * line_space)
             qp.drawLine(side_margin, y, width - side_margin, y)
 
-        qp.drawLine(side_margin,
-                    top,
-                    side_margin,
-                    bottom)
-
-        qp.drawLine(width - side_margin,
-                    top,
-                    width - side_margin, 
-                    bottom)
-
+        # draw vertical lines
+        for i in range(measures + 1):
+            x = side_margin + i * sheet_width / measures
+            qp.drawLine(x, top, x, bottom)
 
         # draw moving line
 
-        sheet_width = width - 2 * side_margin
-        measures = 4
 
         time = (host.FoxDotHandler.getTime() * sheet_width / measures) % sheet_width + side_margin
 
@@ -115,7 +110,7 @@ class HostWidget(QWidget):
         bass = QPixmap(abs_file_path[1])
 
         qp.drawPixmap(110, top - 20, 64, 160, treble)
-        qp.drawPixmap(110, bottom - 83, 80, 100, bass)
+        qp.drawPixmap(110, bottom - 113, 80, 100, bass)
 
         # draw points
 
@@ -131,17 +126,19 @@ class HostWidget(QWidget):
         return ip_address
 
     def reset(self):
-        host.FoxDotHandler.stop()
+        host.FoxDotHandler.reset()
         return
 
     def toggle_stop(self):
         start = "Start"
         stop = "Stop"
 
-        if self.start_stop_button.text() == start: # stop
-            host.FoxDotHandler.stop()
+        if self.start_stop_button.text() == start:
+
+            host.FoxDotHandler.restart()
             self.start_stop_button.setText(stop)
         else:
+            host.FoxDotHandler.stop()
             self.start_stop_button.setText(start)
 
     def run_host(self, address):
@@ -149,16 +146,14 @@ class HostWidget(QWidget):
         self.host.listen()
 
     def update_1(self):
-        while self.running:
+        while True:
             self.update()               
             QApplication.processEvents()
-            time.sleep(0.0025)
-        print "update done"
+            time.sleep(0.01)
 
-    def closeEvent(self, event):
-        window.running = False
-        window.host.stop()
-        print ("close finish")
+    def closeEvent(self, event): # perform clean up
+        # self.running = False
+        self.host.stop()
 
 
 if __name__ == '__main__':
@@ -166,6 +161,5 @@ if __name__ == '__main__':
     window = HostWidget()
     window.setGeometry(100,100,1900,1300)
     window.show()
-    print threading.enumerate()
-    sys.exit(app.exec_())
     window.update_1()
+    sys.exit(app.exec_())

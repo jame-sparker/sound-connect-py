@@ -32,23 +32,23 @@ class FoxDotHandler:
     @staticmethod
     def set_note(addr, note): #music note 
         # dictionary is threadsafe by default
-        print "players info"
-        print addr
-        print FoxDotHandler.players.keys()
         if addr in FoxDotHandler.players:
             print "prevous player"
-            FoxDotHandler.players[addr] >> note
+            player, _ = FoxDotHandler.players[addr]
+            player >> note
+            FoxDotHandler.players[addr] = (player, note)
         else:
             print "new player"
             player = Player()
             print note
             player >> note
-            FoxDotHandler.players[addr] = player
+            FoxDotHandler.players[addr] = (player, note)
           
     @staticmethod  
     def removePlayer(addr):
         if addr in FoxDotHandler.players:
-            FoxDotHandler.players[addr].stop()
+            player, _ = FoxDotHandler.players[addr]
+            player.stop()
             del FoxDotHandler.players[addr] 
 
     @staticmethod
@@ -58,7 +58,7 @@ class FoxDotHandler:
 
     @staticmethod
     def stop():
-        Clock.stop()
+        Clock.clear()
 
     @staticmethod
     def reset():
@@ -68,6 +68,12 @@ class FoxDotHandler:
     @staticmethod
     def getTime():
         return Clock.now()
+
+    @staticmethod
+    def restart():
+        for (p, n) in FoxDotHandler.players.values():
+            print p, n
+            p >> n
 
 
 
@@ -156,8 +162,8 @@ class Receiver(threading.Thread):
             if instrument_text == "pulse":
                 return pulse([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
-            elif instrument_text == "soprano": # flute does not exist 
-                return flute([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
+            elif instrument_text == "flute": # flute does not exist 
+                return soprano([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
             elif instrument_text == "marimba":
                 return marimba([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])

@@ -22,24 +22,24 @@ class MainWindow(QMainWindow):
     def connect_clicked(self):
         nickname = str(self.connection_widget.name_edit.text()).strip()
         host_ip = str(self.connection_widget.ip_edit.text()).strip()
-        # try:
-        error_text = self.connection_widget.error_text
-        error_text.setStyleSheet('color: gray')
-        error_text.setText("Connecting")
+        try:
+            error_text = self.connection_widget.error_text
+            error_text.setStyleSheet('color: gray')
+            error_text.setText("Connecting")
 
-        self.client.connect(host = host_ip)
+            self.client.connect(host = host_ip)
 
-        error_text.setText("")
+            error_text.setText("")
 
-        music_widget = MusicWidget(self)
-        self.central_widget.addWidget(music_widget)
-        self.central_widget.setCurrentWidget(music_widget)
+            music_widget = MusicWidget(self)
+            self.central_widget.addWidget(music_widget)
+            self.central_widget.setCurrentWidget(music_widget)
 
-        # except Exception as e: 
-        #     print(e)
+        except Exception as e: 
+            print(e)
 
-        #     error_text.setStyleSheet('color: red')
-        #     error_text.setText("Connection failed")
+            error_text.setStyleSheet('color: red')
+            error_text.setText("Connection failed")
 
     def return_clicked(self):
         self.client.close()
@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
 class ConnectionWidget(QWidget):
     def __init__(self, parent=None):
         super(ConnectionWidget, self).__init__(parent)
+        self.parent = parent
 
         main_vbox = QVBoxLayout()
         main_vbox.setMargin(50)
@@ -105,6 +106,12 @@ class ConnectionWidget(QWidget):
         ip_address = (s.getsockname()[0])
         s.close()
         return ip_address
+
+    def keyPressEvent(self, qKeyEvent):
+        if qKeyEvent.key() == Qt.Key_Return: 
+            self.parent.connect_clicked()
+        else:
+            super(ConnectionWidget,self).keyPressEvent(qKeyEvent)
 
 
 class MusicWidget(QWidget):
@@ -176,7 +183,7 @@ class MusicWidget(QWidget):
         details_vbox.addStretch()
 
         send_button = QPushButton("Send")
-        send_button.clicked.connect(self.connect_clicked)
+        send_button.clicked.connect(self.send_clicked)
         details_vbox.addWidget(send_button)
 
         main_hbox.addLayout(details_vbox)
@@ -195,7 +202,7 @@ class MusicWidget(QWidget):
         abs_file_path = os.path.join(script_dir, rel_path)
         self.instrument_image.setPixmap(QPixmap(abs_file_path))
 
-    def connect_clicked(self):
+    def send_clicked(self):
 
         timing_text = str(self.timing_edit.text()).replace(" ", "")
 
@@ -221,6 +228,13 @@ class MusicWidget(QWidget):
         except:
             return False
         return True
+
+    def keyPressEvent(self, qKeyEvent):
+        if qKeyEvent.key() == Qt.Key_Return: 
+            self.send_clicked()
+        else:
+            super(MusicWidget, self).keyPressEvent(qKeyEvent)
+
 
 
 if __name__ == '__main__':
