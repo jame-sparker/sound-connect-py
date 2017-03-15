@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         self.client = client.Client()
 
     def connect_clicked(self):
-        nickname = str(self.connection_widget.name_edit.text()).strip()
+        self.nickname = str(self.connection_widget.name_edit.text()).strip()
         host_ip = str(self.connection_widget.ip_edit.text()).strip()
         try:
             error_text = self.connection_widget.error_text
@@ -213,7 +213,7 @@ class MusicWidget(QWidget):
             index = self.instrument_cb.currentIndex()
             instrument_text = music.instrument_names[index]
 
-            message = note_text + "|" + instrument_text + "|" + timing_text
+            message = note_text + "|" + instrument_text + "|" + timing_text + "|" + self.parent.nickname
             self.parent.client.send(message)
 
         else:

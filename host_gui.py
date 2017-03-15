@@ -15,6 +15,8 @@ class HostWidget(QWidget):
 
         self.host = host.Host()
         self.running = True
+        self.start_on = True
+
         # set background color
 
         p = self.palette()
@@ -27,7 +29,20 @@ class HostWidget(QWidget):
 
         control_hbox = QHBoxLayout()
 
+
         control_hbox.addStretch()
+
+        measures_label = QLabel("Measures")
+        control_hbox.addWidget(measures_label)
+
+        measures_up_button = QPushButton("^")
+        measures_down_button = QPushButton("v")
+        measures_up_button.clicked.connect(host.FoxDotHandler.increment_measure)
+        measures_down_button.clicked.connect(host.FoxDotHandler.decrement_measure)
+
+        control_hbox.addWidget(measures_up_button)
+        control_hbox.addWidget(measures_down_button)
+
 
         reset_button = QPushButton("Reset")
         reset_button.clicked.connect(self.reset)
@@ -73,8 +88,10 @@ class HostWidget(QWidget):
         bottom = top + line_space * 12
         side_margin = 100
         sheet_width = width - 2 * side_margin
+        clef_width = 100
+        usable_sheet_width = sheet_width - clef_width
 
-        measures = 4
+        measures = host.FoxDotHandler.get_measure()
 
         # draw horizontal lines
         for i in range(5):
@@ -88,17 +105,24 @@ class HostWidget(QWidget):
         qp.drawLine(side_margin, bottom + 2 * line_space, width - side_margin, bottom + 2 * line_space)
 
         # draw vertical lines
-        for i in range(measures + 1):
-            x = side_margin + i * sheet_width / measures
+
+        x = side_margin
+        qp.drawLine(x, top, x, bottom)
+
+        for i in range(1, measures + 1):
+            x = side_margin + clef_width + i * (usable_sheet_width) / measures
             qp.drawLine(x, top, x, bottom)
 
         # draw moving line
 
-        time = (host.FoxDotHandler.getTime() * sheet_width / measures) % sheet_width + side_margin
+        if self.start_on:
+            time_ratio = (host.FoxDotHandler.getTime() % measures) / measures
+            time_x = (time_ratio * usable_sheet_width) + side_margin + clef_width
+            print time_ratio, time_x
 
-        pen = QPen(Qt.blue, 4, Qt.SolidLine)
-        qp.setPen(pen)
-        qp.drawLine(time, top, time, bottom + 2 * line_space)
+            pen = QPen(Qt.blue, 4, Qt.SolidLine)
+            qp.setPen(pen)
+            qp.drawLine(time_x, top, time_x, bottom + 2 * line_space)
 
         #draw images
         # clefs
@@ -127,7 +151,7 @@ class HostWidget(QWidget):
 
         for _, _, input_args in host.FoxDotHandler.players.values():
 
-            timing, inst_index, pitch = input_args
+            timing, inst_index, pitch, nickname = input_args
 
             y = 0
             
@@ -140,9 +164,16 @@ class HostWidget(QWidget):
                     y = top + line_space * 7.5 - (line_space / 2) * pitch
 
             for x_timing in timing:
-                x = (x_timing / measures * sheet_width + side_margin)
-                size = max(30, 60 - abs(time - x)) # 30 pixels front and back
+                x = (x_timing / measures * usable_sheet_width + clef_width + side_margin)
+
+                size = 40 
+                if self.start_on:
+                    size = max(size, 60 - abs(time_x - x))
+
                 qp.drawPixmap(x - size /2, y - size / 2, size, size, instrument_images[inst_index])
+                pen = QPen(QColor(216, 67, 8), 4, Qt.SolidLine)
+                qp.setPen(pen)
+                qp.drawText(x - 25, y + 25,  nickname)
 
         qp.end()
 
@@ -160,16 +191,16 @@ class HostWidget(QWidget):
         return
 
     def toggle_stop(self):
-        start = "Start"
-        stop = "Stop"
 
-        if self.start_stop_button.text() == start:
+        if not self.start_on:
 
             host.FoxDotHandler.restart()
-            self.start_stop_button.setText(stop)
+            self.start_stop_button.setText("Stop")
         else:
             host.FoxDotHandler.stop()
-            self.start_stop_button.setText(start)
+            self.start_stop_button.setText("Start")
+
+        self.start_on = not self.start_on
 
     def run_host(self, address):
         self.host.setup_socket(address)

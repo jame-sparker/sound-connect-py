@@ -40,7 +40,7 @@ class FoxDotHandler:
     @staticmethod
     def decrement_measure():
         FoxDotHandler.measures_lock.acquire()
-        FoxDotHandler.measures -= 1
+        FoxDotHandler.measures = max(1, FoxDotHandler.measures - 1)
         FoxDotHandler.measures_lock.release()
 
     @staticmethod
@@ -73,11 +73,6 @@ class FoxDotHandler:
             player, _, _ = FoxDotHandler.players[addr]
             player.stop()
             del FoxDotHandler.players[addr] 
-
-    @staticmethod
-    def update():
-        p1 >> pluck([0,2,4], dur=[1,1/2,1/2], amp=[1, 3/4, 3/4])
-
 
     @staticmethod
     def stop():
@@ -133,7 +128,7 @@ class Receiver(threading.Thread):
 
 
     def noteFactory(self,message):
-        note_text, instrument_text, timing_text = message.split("|")
+        note_text, instrument_text, timing_text, nickname = message.split("|")
 
         instrument_index = music.instrument_names.index(instrument_text)
 
@@ -179,7 +174,7 @@ class Receiver(threading.Thread):
 
             print play_string
 
-            return play(play_string, amp=[1]), ([float(x) / 2 for x in timing_list], instrument_index, 0)
+            return play(play_string, amp=[1]), ([float(x) / 2 for x in timing_list], instrument_index, 0, nickname)
 
 
         elif instrument_index != -1:
@@ -233,7 +228,7 @@ class Receiver(threading.Thread):
             elif instrument_text == "zap":
                 note = zap([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
 
-        return note, (timing_list, instrument_index, pitch)
+        return note, (timing_list, instrument_index, pitch, nickname)
 
 class Host:
 
