@@ -212,7 +212,7 @@ class MusicWidget(QWidget):
 
     def send_clicked(self):
 
-        timing_text = str(self.timing_edit.text()).replace(" ", "")
+        timing_text = str(self.timing_edit.text()).replace(" ", "").replace("|", "") # remove " " and "|"
 
         if self.is_valid_timing(timing_text):
             self.error_label.setText("")
@@ -231,8 +231,14 @@ class MusicWidget(QWidget):
 
         try:
             for text_num in text.split(","):
-                n, d = map(float, text_num.split("/"))
-                n / d
+                if text_num == "":
+                    continue
+
+                if "/" in text_num:
+                    n, d = map(float, text_num.split("/"))
+                    n / d
+                else:
+                    float(text_num)
         except:
             return False
         return True

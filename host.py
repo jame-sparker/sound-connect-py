@@ -143,14 +143,27 @@ class Receiver(threading.Thread):
             #not implemented yet
 
             for text_num in timing_text.split(","):
-                n, d = map(float, text_num.split("/"))
-                float_value = n / d
+                if text_num == "":
+                    continue
+
+                float_value = 0
+
+                if "/" in text_num:
+                    n, d = map(float, text_num.split("/"))
+                    float_value = n / d
+
+                else:
+                    float_value = float(text_num)
+
                 if float_value < measures:
                     timing_list.append(int(float_value * 2))
 
             # remove duplicates
             timing_list = list(set(timing_list))
             timing_list.sort()
+
+            if len(timing_list) == 0: # dummy value
+                return play(''), (timing_list, instrument_index, 0, nickname)
 
             play_string_list = ["."] * measures * 2
 
@@ -180,14 +193,27 @@ class Receiver(threading.Thread):
         elif instrument_index != -1:
 
             for text_num in timing_text.split(","):
-                n, d = map(float, text_num.split("/"))
-                float_value = n / d
+                if text_num == "":
+                    continue
+
+                float_value = 0
+
+                if "/" in text_num:
+                    n, d = map(float, text_num.split("/"))
+                    float_value = n / d
+
+                else:
+                    float_value = float(text_num)
+
                 if float_value < measures:
                     timing_list.append(float_value)
 
             # remove duplicates
             timing_list = list(set(timing_list))
             timing_list.sort()
+
+            if len(timing_list) == 0:
+                return play(''), (timing_list, instrument_index, 0, nickname)
 
             foxdot_timing_list = []
             foxdot_amp_list = [0] + [1] * len(timing_list)
@@ -227,7 +253,7 @@ class Receiver(threading.Thread):
 
             elif instrument_text == "zap":
                 note = zap([pitch], dur = foxdot_timing_list, amp = foxdot_amp_list, sus = [1./2])
-
+            print pitch, foxdot_timing_list, foxdot_amp_list
         return note, (timing_list, instrument_index, pitch, nickname)
 
 class Host:
