@@ -59,7 +59,7 @@ class HostWidget(QWidget):
 
         ip_address = self.getIPAddress()
         ip_label = QLabel("Host IP Address: {}".format(ip_address))
-        newfont = QFont("Ubuntu", 15, QFont.Bold) 
+        newfont = QFont("Ubuntu", 20, QFont.Bold) 
         ip_label.setFont(newfont)
         ip_hbox.addWidget(ip_label)
 
