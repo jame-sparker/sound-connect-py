@@ -118,7 +118,6 @@ class HostWidget(QWidget):
         if self.start_on:
             time_ratio = (host.FoxDotHandler.getTime() % measures) / measures
             time_x = (time_ratio * usable_sheet_width) + side_margin + clef_width
-            print time_ratio, time_x
 
             pen = QPen(Qt.blue, 4, Qt.SolidLine)
             qp.setPen(pen)
@@ -179,12 +178,14 @@ class HostWidget(QWidget):
 
 
     def getIPAddress(self):
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8",80))
-        ip_address = (s.getsockname()[0])
-        s.close()
-        return ip_address
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8",80))
+            ip_address = (s.getsockname()[0])
+            s.close()
+            return ip_address
+        except:
+            return ""
 
     def reset(self):
         host.FoxDotHandler.reset()
