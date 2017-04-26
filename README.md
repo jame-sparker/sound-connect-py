@@ -11,12 +11,15 @@ Make sure all computers and on the same network.
 ### Client side setup
 Download executable files from the links below.
 Executables are created with pyinstaller.
+For Mac and Linux, make sure to make the file executable by `chmod`.
 
 ### Host side setup
 There is no executable files for host side, which means the host need to install dependencies.
 Dependencies to install
-- Python
+- Python2
 - PyQt4
   - For Windows, recommend using pip.
-- SuperCollider http://supercollider.github.io/
-- 
+- [SuperCollider](http://supercollider.github.io/)
+- [FoxDot](http://foxdot.org/)
+
+Call `sudo python host.py` or `gksudo python host.py`. The second option is more preferred.
