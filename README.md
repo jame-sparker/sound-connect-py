@@ -7,8 +7,8 @@ It utilizes SuperCollider and Foxdot.
 
 ## Images
 
-![client]("./assets/client.png")
-![host]("./assets/host.png")
+![client](/assets/client.png =250x)
+![host](/assets/host.png =400x)
 
 ## Setting up
 Make sure all computers are on the same network.
