@@ -14,9 +14,9 @@ Make sure all computers are on the same network.
 
 ### Client side setup
 Download executable files from the links below.
-Linux: https://goo.gl/PJmE1n (28MB)
-Mac: https://goo.gl/KrN1ar (15MB)
-Windows: https://goo.gl/D14K1Y (14MB)
+- Linux: https://goo.gl/PJmE1n (28MB)
+- Mac: https://goo.gl/KrN1ar (15MB)
+- Windows: https://goo.gl/D14K1Y (14MB)
 
 Executables are created with pyinstaller.
 For Mac and Linux, make sure to make the file executable by `chmod`.
