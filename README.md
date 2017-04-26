@@ -7,8 +7,7 @@ It utilizes SuperCollider and Foxdot.
 
 ## Images
 
-<img src="assets/client.png" alt="Client" width="200px"/>
-<img src="assets/host.png" alt="Host" width="400px"/>
+<img src="assets/client.png" alt="Client" width="300px"/> <img src="assets/host.png" alt="Host" width="500px"/>
 
 ## Setting up
 Make sure all computers are on the same network.
