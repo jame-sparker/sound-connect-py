@@ -1,0 +1,22 @@
+# sound-connect-py
+
+Sound connect is a collaborative music environment written in Python2 and PyQt4.
+I have created for tutorial facilitaiton in a course at ANU. The most of the code
+is written over a weekend so there are some bad coding practices and small few bugs.
+It utilizes SuperCollider and Foxdot.
+
+## Setting up
+Make sure all computers and on the same network.
+
+### Client side setup
+Download executable files from the links below.
+Executables are created with pyinstaller.
+
+### Host side setup
+There is no executable files for host side, which means the host need to install dependencies.
+Dependencies to install
+- Python
+- PyQt4
+  - For Windows, recommend using pip.
+- SuperCollider http://supercollider.github.io/
+- 
